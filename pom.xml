@@ -1,81 +1,113 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://www.w3.org/2001/XMLSchema-instance">
-    <modelVersion>4.0.0</modelVersion>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.comsonics.geoserver</groupId>
-    <artifactId>geoserver-snowflake-extension</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+	<groupId>com.comsonics.geoserver</groupId>
+	<artifactId>geoserver-snowflake-extension</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
-    <name>GeoServer Snowflake Extension</name>
-    <description>Snowflake JDBC extension for GeoServer</description>
+	<name>GeoServer Snowflake Extension</name>
+	<description>Snowflake JDBC extension for GeoServer</description>
 
-    <properties>
-        <geoserver.version>2.25.0</geoserver.version>
-        <java.version>1.8</java.version>
-    </properties>
+	<properties>
+		<geoserver.version>2.25.0</geoserver.version>
+		<java.version>1.8</java.version>
+		<geotools.version>31-SNAPSHOT</geotools.version>
+	</properties>
 
-    <repositories>
-        <repository>
-            <id>osgeo</id>
-            <name>OSGeo</name>
-            <url>https://repo.osgeo.org/repository/release/</url>
-        </repository>
-        <repository>
-            <id>geoserver-community-release</id>
-            <name>GeoServer Community Release</name>
-            <url>https://repo.osgeo.org/repository/geoserver-community-release/</url>
-        </repository>
-    </repositories>
+	<dependencies>
 
-    <dependencies>
-        <!-- GeoServer dependencies -->
-        <dependency>
-            <groupId>org.geoserver</groupId>
-            <artifactId>gs-main</artifactId>
-            <version>${geoserver.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.geoserver.web</groupId>
-            <artifactId>gs-web-core</artifactId>
-            <version>${geoserver.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>org.geoserver</groupId>
+			<artifactId>gs-main</artifactId>
+			<version>${geoserver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-main</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-cql</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-epsg-hsql</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geoserver.web</groupId>
+			<artifactId>gs-web-core</artifactId>
+			<version>${geoserver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.javacsv</groupId>
+			<artifactId>javacsv</artifactId>
+			<version>2.0</version>
+		</dependency>
+	</dependencies>
 
-        <!-- Other dependencies if needed -->
-    </dependencies>
+	<repositories>
+		<repository>
+			<id>osgeo</id>
+			<name>OSGeo</name>
+			<url>https://repo.osgeo.org/repository/release/</url>
+		</repository>
+		<repository>
+			<id>geoserver-community-release</id>
+			<name>GeoServer Community Release</name>
+			<url>https://repo.osgeo.org/repository/geoserver-community-release/</url>
+		</repository>
+		<repository>
+			<id>osgeo-snapshot</id>
+			<name>OSGeo Snapshot Repository</name>
+			<url>https://repo.osgeo.org/repository/snapshot/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
+	</repositories>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <descriptors>
-                        <descriptor>src/main/assembly/geoserver-extension.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.3.0</version>
+				<configuration>
+					<descriptors>
+						<descriptor>src/main/assembly/geoserver-extension.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
