@@ -1,16 +1,9 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
-
- <beans>
-    <bean id="connectionPage" class="org.geoserver.web.MenuPageInfo">
-      <property name="id" value="connectionPage"/>
-      <property name="titleKey" value="ConnectionPage.page.title"/>
-      <property name="descriptionKey" value="ConnectionPage.page.description"/>
-      <property name="componentClass" value="com.comsonics.snowflake.ui.ConnectionPage"/>
-    </bean>
-    <bean id="SnowflakePage" class="org.geoserver.web.MenuPageInfo">
-      <property name="id" value="snowflakePage"/>
-      <property name="titleKey" value="SnowflakePage.page.title"/>
-      <property name="descriptionKey" value="SnowflakePage.page.description"/>
-      <property name="componentClass" value="org.geoserver.snowflakepage.SnowflakePage"/>
-    </bean>
+<beans>
+	<bean id="ConnectionPage" class="org.geoserver.web.MenuPageInfo">
+		<property name="id" value="connectionPage" />
+		<property name="titleKey" value="ConnectionPage.page.title" />
+		<property name="descriptionKey" value="ConnectionPage.page.description" />
+		<property name="componentClass" value="com.comsonics.snowflake.ui.ConnectionPage" />
+	</bean>
 </beans>
