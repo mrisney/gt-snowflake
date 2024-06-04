@@ -34,7 +34,7 @@ public class SnowflakeDataStore {
     private DataSource createDataSource(Map<String, Object> params) throws SQLException {
         String user = (String) params.get(SnowflakeDataStoreFactory.USER.key);
         String password = (String) params.get(SnowflakeDataStoreFactory.PASSWORD.key);
-        String account = (String) params.get(SnowflakeDataStoreFactory.HOST.key);
+        String account = (String) params.get(SnowflakeDataStoreFactory.ACCOUNT.key);
         String database = (String) params.get(SnowflakeDataStoreFactory.DATABASE.key);
         String schema = (String) params.get(SnowflakeDataStoreFactory.SCHEMA.key);
 
