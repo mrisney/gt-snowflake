@@ -85,6 +85,7 @@ public class SnowflakeDataStoreTest {
         properties.put("account", account);
         properties.put("db", db);
         properties.put("schema", schema);
+        properties.put("tracing", "all");
 
         // Set login timeout
         DriverManager.setLoginTimeout(10); // 10 seconds

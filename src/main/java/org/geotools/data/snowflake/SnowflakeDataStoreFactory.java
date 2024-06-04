@@ -82,4 +82,7 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
     public Map<Key, ?> getImplementationHints() {
         return Collections.emptyMap();
     }
+    
+    
+    
 }
