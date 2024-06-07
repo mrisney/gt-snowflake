@@ -1,17 +1,16 @@
 package org.geotools.data.snowflake;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Properties;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class SnowflakeDataStoreTest {
 
@@ -55,8 +54,9 @@ public class SnowflakeDataStoreTest {
 
     private Connection getConnection() throws Exception {
         Properties properties = new Properties();
-        
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("snowflake.properties")) {
+
+        try (InputStream input =
+                getClass().getClassLoader().getResourceAsStream("snowflake.properties")) {
             if (input == null) {
                 throw new RuntimeException("Unable to find snowflake.properties");
             }
@@ -76,7 +76,12 @@ public class SnowflakeDataStoreTest {
         String schema = properties.getProperty("schema");
         String connectStr = properties.getProperty("connectStr");
 
-        if (user == null || password == null || account == null || db == null || schema == null || connectStr == null) {
+        if (user == null
+                || password == null
+                || account == null
+                || db == null
+                || schema == null
+                || connectStr == null) {
             throw new RuntimeException("Missing required connection properties");
         }
 
@@ -89,7 +94,7 @@ public class SnowflakeDataStoreTest {
 
         // Set login timeout
         DriverManager.setLoginTimeout(10); // 10 seconds
-        
+
         System.out.println("Connecting to Snowflake with: " + connectStr);
         return DriverManager.getConnection(connectStr, properties);
     }

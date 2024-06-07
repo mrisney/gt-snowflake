@@ -1,8 +1,5 @@
 package org.geotools.data.snowflake;
 
-import org.geotools.jdbc.JDBCDataStore;
-import org.geotools.jdbc.SQLDialect;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,6 +7,8 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
 import javax.sql.DataSource;
+import org.geotools.jdbc.JDBCDataStore;
+import org.geotools.jdbc.SQLDialect;
 
 public class SnowflakeDataStore {
 
@@ -33,7 +32,7 @@ public class SnowflakeDataStore {
 
     private DataSource createDataSource(Map<String, Object> params) throws SQLException {
         String user = (String) params.get(SnowflakeDataStoreFactory.USER.key);
-        String password = (String) params.get(SnowflakeDataStoreFactory.PASSWORD.key);
+        String password = (String) params.get(SnowflakeDataStoreFactory.PASSWD.key);
         String account = (String) params.get(SnowflakeDataStoreFactory.ACCOUNT.key);
         String database = (String) params.get(SnowflakeDataStoreFactory.DATABASE.key);
         String schema = (String) params.get(SnowflakeDataStoreFactory.SCHEMA.key);
