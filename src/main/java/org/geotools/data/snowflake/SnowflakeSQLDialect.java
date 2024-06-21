@@ -2,37 +2,20 @@ package org.geotools.data.snowflake;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.Map;
-import java.util.logging.Level;
-import org.geotools.api.feature.simple.SimpleFeatureType;
-import org.geotools.api.feature.type.AttributeDescriptor;
 import org.geotools.api.feature.type.GeometryDescriptor;
-import org.geotools.api.referencing.FactoryException;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.geometry.jts.Geometries;
+import org.geotools.jdbc.BasicSQLDialect;
 import org.geotools.jdbc.JDBCDataStore;
-import org.geotools.jdbc.SQLDialect;
-import org.geotools.referencing.CRS;
 import org.geotools.util.factory.Hints;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.MultiLineString;
-import org.locationtech.jts.geom.MultiPoint;
-import org.locationtech.jts.geom.MultiPolygon;
-import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKBReader;
+import org.locationtech.jts.io.WKTReader;
 
-public class SnowflakeSQLDialect extends SQLDialect {
+public class SnowflakeSQLDialect extends BasicSQLDialect {
 
     public SnowflakeSQLDialect(JDBCDataStore dataStore) {
         super(dataStore);
@@ -121,5 +104,12 @@ public class SnowflakeSQLDialect extends SQLDialect {
                 .append(geometryColumn)
                 .append(")) AS envelope FROM ")
                 .append(tableName);
+    }
+
+    @Override
+    public void encodeGeometryValue(Geometry value, int dimension, int srid, StringBuffer sql)
+            throws IOException {
+        // TODO Auto-generated method stub
+
     }
 }

@@ -144,6 +144,7 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
         properties.put("user", user);
         properties.put("password", password);
         properties.put("account", account);
+        properties.put("database", database);
         if (database != null) {
             properties.put("db", database);
         }
@@ -153,7 +154,10 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
         properties.put("tracing", "all");
 
         String connectStr =
-                "jdbc:snowflake://" + account + ".west-us-2.azure.snowflakecomputing.com";
+                "jdbc:snowflake://"
+                        + account
+                        + ".west-us-2.azure.snowflakecomputing.com?db="
+                        + database;
         dataSource.setUrl(connectStr);
         dataSource.setUsername(user);
         dataSource.setPassword(password);
