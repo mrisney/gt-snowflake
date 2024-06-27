@@ -4,112 +4,119 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.feature.type.GeometryDescriptor;
+import org.geotools.data.jdbc.FilterToSQL;
+import org.geotools.geometry.jts.WKBReader;
 import org.geotools.jdbc.BasicSQLDialect;
+import org.geotools.jdbc.ColumnMetadata;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.util.factory.Hints;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKTReader;
+import org.opengis.filter.Filter;
 
 public class SnowflakeSQLDialect extends BasicSQLDialect {
 
-    public SnowflakeSQLDialect(JDBCDataStore dataStore) {
-        super(dataStore);
-    }
+	public SnowflakeSQLDialect(JDBCDataStore dataStore) {
+		super(dataStore);
+	}
 
-    @Override
-    public boolean includeTable(String schemaName, String tableName, Connection cx)
-            throws SQLException {
-        // Customize as needed for Snowflake
-        return true;
-    }
+	@Override
+	public void initializeConnection(Connection cx) throws SQLException {
+		// Implementation of initializing the connection
+	}
 
-    // @Override
-    public String getName() {
-        return "Snowflake";
-    }
+	@Override
+	public void encodeGeometryValue(Geometry value, int dimension, int srid, StringBuffer sql) throws IOException {
+		if (value == null) {
+			sql.append("NULL");
+		} else {
+			String wkt = value.toText();
+			sql.append("ST_GeomFromText('").append(wkt).append("', ").append(srid).append(")");
+		}
+	}
 
-    @Override
-    public void initializeConnection(Connection cx) throws SQLException {
-        super.initializeConnection(cx);
-        // Add any Snowflake-specific initialization if needed
-    }
+	@Override
+	public void encodeGeometryEnvelope(String tableName, String geometryColumn, StringBuffer sql) {
+		sql.append("ST_Envelope(ST_Collect(");
+		sql.append(geometryColumn);
+		sql.append("))");
+	}
 
-    @Override
-    public void encodeGeometryColumn(
-            GeometryDescriptor descriptor, String prefix, int srid, Hints hints, StringBuffer sql) {
-        // Implement Snowflake-specific geometry encoding if needed
-        super.encodeGeometryColumn(descriptor, prefix, srid, hints, sql);
-    }
+	@Override
+	public FilterToSQL createFilterToSQL() {
+		return new SnowflakeFilterToSQL();
+	}
 
-    @Override
-    public Integer getGeometrySRID(
-            String schemaName, String tableName, String columnName, Connection cx)
-            throws SQLException {
-        // Implement Snowflake-specific SRID extraction if needed
-        return super.getGeometrySRID(schemaName, tableName, columnName, cx);
-    }
+	// @Override
+	public Filter[] splitFilter(Filter filter, SimpleFeatureType schema) {
+		return new Filter[] { filter, null };
+	}
 
-    @Override
-    public Geometry decodeGeometryValue(
-            GeometryDescriptor descriptor,
-            ResultSet rs,
-            String column,
-            GeometryFactory factory,
-            Connection cx,
-            Hints hints)
-            throws SQLException {
-        // Read the WKT string from the ResultSet
-        String wkt = rs.getString(column);
-        if (wkt == null) {
-            return null;
-        }
+	@Override
+	public String[] getDesiredTablesType() {
+		return new String[] { "TABLE" };
+	}
 
-        // Convert the WKT string to a Geometry object
-        WKTReader reader = new WKTReader(factory);
-        try {
-            return reader.read(wkt);
-        } catch (ParseException e) {
-            throw new SQLException("Failed to parse WKT for geometry column: " + column, e);
-        }
-    }
+	@Override
+	public void encodeValue(Object value, Class type, StringBuffer sql) {
+		if (value == null) {
+			sql.append("NULL");
+		} else if (value instanceof Geometry) {
+			try {
+				encodeGeometryValue((Geometry) value, 2, -1, sql);
+			} catch (IOException e) {
+				throw new RuntimeException("Error encoding geometry", e);
+			}
+		} else {
+			super.encodeValue(value, type, sql);
+		}
+	}
 
-    @Override
-    public Envelope decodeGeometryEnvelope(ResultSet rs, int column, Connection cx)
-            throws SQLException {
-        // Read the envelope WKT string from the ResultSet
-        String envelopeWKT = rs.getString(column);
-        if (envelopeWKT == null) {
-            return null;
-        }
+	@Override
+	public Integer getGeometrySRID(String schemaName, String tableName, String columnName, Connection cx)
+			throws SQLException {
+		// Implementation of getting geometry SRID
+		return null;
+	}
 
-        // Convert the WKT string to an Envelope object
-        WKTReader reader = new WKTReader();
-        try {
-            Polygon envelopePolygon = (Polygon) reader.read(envelopeWKT);
-            return envelopePolygon.getEnvelopeInternal();
-        } catch (ParseException e) {
-            throw new SQLException("Failed to parse WKT for envelope column: " + column, e);
-        }
-    }
+	@Override
+	public int getGeometryDimension(String schemaName, String tableName, String columnName, Connection cx)
+			throws SQLException {
+		// Implementation of getting geometry dimension
+		return 2;
+	}
 
-    @Override
-    public void encodeGeometryEnvelope(String tableName, String geometryColumn, StringBuffer sql) {
-        // Generate SQL for calculating the envelope of the geometry column
-        sql.append("SELECT ST_AsText(ST_Envelope(")
-                .append(geometryColumn)
-                .append(")) AS envelope FROM ")
-                .append(tableName);
-    }
+	@Override
+	public void handleUserDefinedType(ResultSet columnMetaData, ColumnMetadata metadata, Connection cx)
+			throws SQLException {
+		// Implementation of handling user-defined type
+	}
 
-    @Override
-    public void encodeGeometryValue(Geometry value, int dimension, int srid, StringBuffer sql)
-            throws IOException {
-        // TODO Auto-generated method stub
+	@Override
+	public Envelope decodeGeometryEnvelope(ResultSet rs, int column, Connection cx) throws SQLException, IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    }
+	@Override
+	public Geometry decodeGeometryValue(GeometryDescriptor descriptor, ResultSet rs, String column,
+			GeometryFactory factory, Connection cx, Hints hints) throws IOException, SQLException {
+		byte[] bytes = rs.getBytes(column);
+		if (bytes == null) {
+			return null;
+		}
+
+		try {
+			return new WKBReader(factory).read(bytes);
+		} catch (ParseException e) {
+			String msg = "Error decoding wkb";
+			throw (IOException) new IOException(msg).initCause(e);
+		}
+
+	}
 }
