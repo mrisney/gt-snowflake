@@ -4,18 +4,20 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.geotools.api.data.Parameter;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.jdbc.JDBCDataStoreFactory;
 import org.geotools.jdbc.SQLDialect;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.geotools.util.logging.Logging;
 
 public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDataStoreFactory.class);
+	
+	 private static final Logger LOGGER = Logging.getLogger(SnowflakeDataStoreFactory.class);
+
 
 	/** parameter for database type */
 	public static final Param DBTYPE = new Param("dbtype", String.class, "Type", true, "snowflake",
