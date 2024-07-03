@@ -1,5 +1,7 @@
 package org.geotools.data.snowflake;
 
+import java.io.Writer;
+
 import org.geotools.api.filter.spatial.BBOX;
 import org.geotools.api.filter.spatial.Beyond;
 import org.geotools.api.filter.spatial.Contains;
@@ -15,7 +17,8 @@ import org.geotools.data.jdbc.FilterToSQL;
 import org.geotools.filter.FilterCapabilities;
 
 public class SnowflakeFilterToSQL extends FilterToSQL {
-	public SnowflakeFilterToSQL() {
+	public SnowflakeFilterToSQL(Writer out) {
+		super(out);
 	}
 
 	@Override

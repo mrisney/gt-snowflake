@@ -1,126 +1,117 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<!-- =========================================================== -->
-	<!--     Module Description                                      -->
-	<!-- =========================================================== -->
+    <groupId>org.geotools.jdbc</groupId>
+    <artifactId>gt-jdbc-snowflake</artifactId>
+    <version>31.1</version>
+    <packaging>jar</packaging>
+    <name>Snowflake DataStore</name>
+    <description>DataStore for Snowflake Database.</description>
 
-	<groupId>org.geotools.jdbc</groupId>
-	<artifactId>gt-jdbc-snowflake</artifactId>
-	<version>31.1</version>
-	<packaging>jar</packaging>
-	<name>Snowflake DataStore</name>
+    <licenses>
+        <license>
+            <name>Lesser General Public License (LGPL)</name>
+            <url>http://www.gnu.org/copyleft/lesser.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
-	<description>DataStore for Snowflake Database.</description>
+    <properties>
+        <snowflake.jdbc.version>3.13.3</snowflake.jdbc.version>
+        <geotools.version>31.1</geotools.version>
+        <geotools.opengis.version>29.5</geotools.opengis.version>
+        <geotools.gt-api.version>30.0</geotools.gt-api.version>
+        <geoapi.version>3.0.2</geoapi.version>
+        <jts.version>1.16.1</jts.version>
+        <slf4j.version>1.7.32</slf4j.version>
+        <logback.version>1.2.3</logback.version>
+        <junit.version>4.13.2</junit.version>
+        <jdk.version>1.8</jdk.version>
+    </properties>
 
-	<licenses>
-		<license>
-			<name>Lesser General Public License (LGPL)</name>
-			<url>http://www.gnu.org/copyleft/lesser.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
+    <dependencies>
+        <dependency>
+            <groupId>net.snowflake</groupId>
+            <artifactId>snowflake-jdbc</artifactId>
+            <version>${snowflake.jdbc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-main</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-api</artifactId>
+            <version>${geotools.gt-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-jdbc</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-referencing</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-opengis</artifactId>
+            <version>${geotools.opengis.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opengis</groupId>
+            <artifactId>geoapi</artifactId>
+            <version>${geoapi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>${jts.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
+    <repositories>
+        <repository>
+            <id>osgeo</id>
+            <url>https://repo.osgeo.org/repository/release/</url>
+        </repository>
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </repository>
+    </repositories>
 
-	<properties>
-		<snowflake.jdbc.version>3.13.3</snowflake.jdbc.version>
-		
-		<geotools.version>31.1</geotools.version>
-		<geotools.opengis.version>29.5</geotools.opengis.version>
-		<geotools.gt-api.version>30.0</geotools.gt-api.version>
-		<geoapi.version>3.0.2</geoapi.version>
-		
-		<jts.version>1.16.1</jts.version>
-		
-		<slf4j.version>1.7.32</slf4j.version>
-		<logback.version>1.2.3</logback.version>
-		<junit.version>4.13.2</junit.version>
-		<jdk.version>1.8</jdk.version>
-	</properties>
-
-	<dependencies>
-		<dependency>
-			<groupId>net.snowflake</groupId>
-			<artifactId>snowflake-jdbc</artifactId>
-			<version>${snowflake.jdbc.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-main</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-api</artifactId>
-			<version>${geotools.gt-api.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-jdbc</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-referencing</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-opengis</artifactId>
-			<version>${geotools.opengis.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.opengis</groupId>
-			<artifactId>geoapi</artifactId>
-			<version>${geoapi.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.locationtech.jts</groupId>
-			<artifactId>jts-core</artifactId>
-			<version>${jts.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>${logback.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<repositories>
-		<repository>
-			<id>osgeo</id>
-			<url>https://repo.osgeo.org/repository/release/</url>
-		</repository>
-		<repository>
-			<id>central</id>
-			<url>https://repo.maven.apache.org/maven2/</url>
-		</repository>
-	</repositories>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
-					<source>${jdk.version}</source>
-					<target>${jdk.version}</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

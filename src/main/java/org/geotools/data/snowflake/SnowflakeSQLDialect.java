@@ -1,6 +1,7 @@
 package org.geotools.data.snowflake;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,7 +50,7 @@ public class SnowflakeSQLDialect extends BasicSQLDialect {
 
 	@Override
 	public FilterToSQL createFilterToSQL() {
-		return new SnowflakeFilterToSQL();
+		return new SnowflakeFilterToSQL(new StringWriter());
 	}
 
 	// @Override
