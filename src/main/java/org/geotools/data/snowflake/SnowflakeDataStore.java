@@ -13,6 +13,8 @@ import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.jdbc.SQLDialect;
 
 public class SnowflakeDataStore {
+	
+	//Possibly not needed, may delete later
 
 	private JDBCDataStore dataStore;
 

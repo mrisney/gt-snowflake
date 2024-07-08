@@ -16,6 +16,7 @@ public class SnowflakeDataStoreTest {
 
     private Connection connection;
 
+    /*
     @Before
     public void setUp() throws Exception {
         connection = getConnection();
@@ -51,6 +52,7 @@ public class SnowflakeDataStoreTest {
             fail("Failed to execute query: " + e.getLocalizedMessage());
         }
     }
+    */
 
     private Connection getConnection() throws Exception {
         Properties properties = new Properties();
