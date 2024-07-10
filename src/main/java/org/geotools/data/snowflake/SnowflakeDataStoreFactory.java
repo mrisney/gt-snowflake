@@ -19,12 +19,13 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 
 	
 	 private static final Logger LOGGER = Logging.getLogger(SnowflakeDataStoreFactory.class);
+	 private static final String CLASS_NAME = "SnowflakeDataStoreFactory";
 
 
 	/** parameter for database type */
 	public static final Param DBTYPE = new Param("dbtype", String.class, "Type", true, "snowflake",
 			Collections.singletonMap(Parameter.LEVEL, "program"));
-
+	public static final Param DATABASE = new Param("database", String.class, "Database", true);
 	public static final Param ACCOUNT = new Param("account", String.class, "Snowflake account", true);
 	public static final Param SCHEMA = new Param("schema", String.class, "Schema", false);
 	public static final Param CLOUD_PROVIDER = new Param("cloud provider", String.class, "Cloud Provider", true);
@@ -33,37 +34,44 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 
 	@Override
 	protected String getDatabaseID() {
-		LOGGER.log(Level.INFO, "getDatabaseID() -- " + (String) DBTYPE.sample);
+		LOGGER.entering(CLASS_NAME, "getDatabaseID");
+		LOGGER.exiting(CLASS_NAME, "getDatabaseID", (String) DBTYPE.sample);
 		return (String) DBTYPE.sample;
 	}
 
 	@Override
 	public String getDisplayName() {
-		LOGGER.log(Level.INFO, "getDisplayName() -- Snowflake");
+		LOGGER.entering(CLASS_NAME, "getDisplayName");
+		LOGGER.exiting(CLASS_NAME, "getDisplayName", "Snowflake");
 		return "Snowflake";
 	}
 
 	@Override
 	public String getDescription() {
-		LOGGER.log(Level.INFO, "getDescription() -- Snowflake Database");
+		LOGGER.entering(CLASS_NAME, "getDescription");
+		LOGGER.exiting(CLASS_NAME, "getDescription", "Snowflake Database");
 		return "Snowflake Database";
 	}
 
 	@Override
 	protected String getDriverClassName() {
-		LOGGER.log(Level.INFO, "getDriverClassName() -- net.snowflake.client.jdbc.SnowflakeDriver");
+		LOGGER.entering(CLASS_NAME, "getDriverClassName");
+		LOGGER.exiting(CLASS_NAME, "getDriverClassName", "net.snowflake.client.jdbc.SnowflakeDriver");
 		return "net.snowflake.client.jdbc.SnowflakeDriver";
 	}
 
 	@Override
 	protected SQLDialect createSQLDialect(JDBCDataStore dataStore) {
-		LOGGER.log(Level.INFO, "createSQLDialect()");
-		return new SnowflakeSQLDialect(dataStore);
+		LOGGER.entering(CLASS_NAME, "createSQLDialect", dataStore);
+		LOGGER.exiting(CLASS_NAME, "createSQLDialect");
+		return new SnowflakeDialectBasic(dataStore);
 	}
 
 	@Override
 	protected void setupParameters(Map<String, Object> parameters) {
 		super.setupParameters(parameters);
+		
+		LOGGER.entering(CLASS_NAME, "setupParameters", parameters);
 		parameters.remove(HOST.key);
 		parameters.remove(PORT.key);
 		parameters.put(ACCOUNT.key, ACCOUNT);
@@ -74,18 +82,24 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 		parameters.put(CLOUD_PROVIDER.key, CLOUD_PROVIDER);
 		parameters.put(CLOUD_REGION.key, CLOUD_REGION);
 		//parameters.put(JDBC_URL.key, JDBC_URL);
-
-		LOGGER.log(Level.INFO, "Setup parameters for Snowflake DataStore\n\tAccount: " + ACCOUNT 
-				+ "\n\tUser: " + USER
-				+ "\n\tProvider: " + CLOUD_PROVIDER
-				+ "\n\tRegion: " + CLOUD_REGION
-				+ "\n\tPassword: " + PASSWD 
-				+ "\n\tDatabase: " + DATABASE 
-				+ "\n\tSchema: " + SCHEMA);
+		
+		
+		LOGGER.finer("Setup parameters for Snowflake DataStore\n\tAccount: " + ACCOUNT.toString()
+				+ "\n\tUser: " + USER.toString()
+				+ "\n\tProvider: " + CLOUD_PROVIDER.toString()
+				+ "\n\tRegion: " + CLOUD_REGION.toString()
+				+ "\n\tPassword: " + PASSWD.toString()
+				+ "\n\tDatabase: " + DATABASE.toString() 
+				+ "\n\tSchema: " + SCHEMA.toString());
+		
+		LOGGER.exiting(CLASS_NAME, "setupParameters", parameters);
 	}
 
 	@Override
 	protected String getJDBCUrl(Map<String, ?> params) throws IOException {
+		
+		LOGGER.entering(CLASS_NAME, "getJDBCUrl", params);
+		
 		String account = (String) ACCOUNT.lookUp(params);
 		String database = (String) DATABASE.lookUp(params);
 		String schema = (String) SCHEMA.lookUp(params);
@@ -104,53 +118,63 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 		 * url.append("?db=").append(database).append("&schema=").append(schema); } }
 		 */
 		
-		LOGGER.log(Level.INFO, "getJDBCUrl() -- " + url.toString());
+		LOGGER.exiting(CLASS_NAME, "getJDBCUrl", url.toString());
 		return url.toString();
 	}
 
 	@Override
 	protected String getValidationQuery() {
-		LOGGER.log(Level.INFO, "validationQuery() -- SELECT 1");
+		LOGGER.entering(CLASS_NAME, "getValidationQuery");
+		LOGGER.exiting(CLASS_NAME, "getValidationQuery", "SELECT 1");
 		return "SELECT 1";
 	}
 
 	@Override
 	public boolean canProcess(Map params) {
+		LOGGER.entering(CLASS_NAME, "canProcess", params);
 		try {
 			Class.forName("net.snowflake.client.jdbc.SnowflakeDriver");
-			LOGGER.log(Level.INFO, "canProcess() -- Found Class net.snowflake.client.jdbc.SnowflakeDriver ");
+			
+			LOGGER.finer("Success -- Found Class net.snowflake.client.jdbc.SnowflakeDriver");
+			LOGGER.exiting(CLASS_NAME, "canProcess", checkDBType(params) && super.canProcess(params));
+			
 			return checkDBType(params) && super.canProcess(params);
 		} catch (ClassNotFoundException e) {
-			LOGGER.log(Level.SEVERE, "canProcess() -- Snowflake JDBC driver not found", e);
+			
+			LOGGER.finer("Failure -- Snowflake JDBC driver not found");
+			LOGGER.exiting(CLASS_NAME, "canProcess", false);
 			return false;
 		}
 	}
 
 	@Override
 	protected JDBCDataStore createDataStoreInternal(JDBCDataStore dataStore, Map<String, ?> params) throws IOException {
-		SnowflakeSQLDialect dialect = (SnowflakeSQLDialect) dataStore.getSQLDialect();
-		LOGGER.log(Level.INFO, "Creating Snowflake DataStore");
+		//SnowflakeDialect dialect = (SnowflakeDialect) dataStore.getSQLDialect();
+		LOGGER.entering(CLASS_NAME, "createDataStoreInternal", new Object[] {dataStore, params});
 		logParameters(params);
+		LOGGER.exiting(CLASS_NAME, "createDataStoreInternal", dataStore);
 		return dataStore;
 	}
 
 	private void logParameters(Map<String, ?> params) {
-		LOGGER.log(Level.INFO, "Parameters set by the user:");
+		
+		LOGGER.finer("Parameters set by the user:");
 		for (Map.Entry<String, ?> entry : params.entrySet()) {
 			if (entry.getValue() == null)
-			{
-				LOGGER.log(Level.INFO, "\tKey: " + entry.getKey().toString() + " -- Value: NULL");
+			{	
+				LOGGER.finer("\tKey: " + entry.getKey().toString() + " -- Value: NULL");
 			}
 			else
 			{
-				LOGGER.log(Level.INFO, "\tKey: " + entry.getKey().toString() + " -- Value: " + entry.getValue().toString());
+				LOGGER.finer("\tKey: " + entry.getKey().toString() + " -- Value: " + entry.getValue().toString());
 			}
 		}
 	}
 
 	@Override
 	public BasicDataSource createDataSource(Map<String, ?> params) throws IOException {
-		LOGGER.log(Level.INFO, "createDataSource() -- Start");
+		
+		LOGGER.entering(CLASS_NAME, "createDataSource", params);
 		BasicDataSource dataSource = new BasicDataSource();
 		String user = (String) USER.lookUp(params);
 		String password = (String) PASSWD.lookUp(params);
@@ -184,8 +208,8 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 		dataSource.setDriverClassName(getDriverClassName());
 		dataSource.setConnectionProperties(properties.toString());
 
-		LOGGER.log(Level.INFO, "Configured DataSource with Arrow disabled and custom properties");
-		LOGGER.log(Level.INFO, "createDataSource() -- End");
+		LOGGER.finer("Configured DataSource with Arrow disabled and custom properties");
+		LOGGER.exiting(CLASS_NAME, "createDataSource", dataSource);
 
 		return dataSource;
 	}
