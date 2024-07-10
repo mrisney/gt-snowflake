@@ -56,7 +56,7 @@ Method 2:
 
 	- Sign into SnowSight at app.snowflake.com
 	- Click your user account in the bottom-left to bring up the user menu
-	- Hover over the Account section to bring up a menu with all account your user has access to. The account you're currently signed into should have a check mark next to it
+	- Hover over the Account section to bring up a menu with all accounts your user has access to. The account you're currently signed into should have a check mark next to it
 	- Hover over the Account you're signed into to bring up the Account Info menu
 	- The Locator is your account identifier, copy this into the account parameter in GeoServer
 
@@ -67,6 +67,6 @@ Update the pom.xml and assembly descriptor as needed for additional features or 
 
 
 # Documentation and Version Control:
-Document any code changes and adhere to GeoServer's best practices for developing extensions 
+Document any code changes and adhere to GeoServer's best practices for developing extensions. 
 Use version control (e.g., Git) to manage your codebase and track changes.
 If you encounter any issues during these steps or need further assistance, feel free to ask!
