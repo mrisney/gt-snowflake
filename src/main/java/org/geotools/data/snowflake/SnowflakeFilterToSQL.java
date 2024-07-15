@@ -134,6 +134,24 @@ public class SnowflakeFilterToSQL extends FilterToSQL {
 	protected Object visitBinarySpatialOperator (BinarySpatialOperator filter, Expression e1, Expression e2, boolean swapped, Object extraData) {
 		LOGGER.entering(CLASS_NAME, "visitBinarySpatialOperator", new Object[] {filter, e1, e2, swapped, extraData});
 		try {
+			if (!(filter instanceof Disjoint) && !(filter instanceof DistanceBufferOperator)) {
+                
+                out.write("ST_INTERSECTS(");
+                e1.accept(this, extraData);
+                out.write(", ");
+                e2.accept(this, extraData);
+                out.write(") = 1");
+
+                if (!(filter instanceof BBOX)) {
+                    out.write(" AND ");
+                }
+            }
+
+            if (filter instanceof BBOX) {
+                // nothing to do. already encoded above
+                return extraData;
+            }
+			
 			if (filter instanceof DistanceBufferOperator) {
 				LOGGER.finest("Filtering for DistanceBufferOperator");
 				out.write("ST_DISTANCE(");
@@ -153,14 +171,6 @@ public class SnowflakeFilterToSQL extends FilterToSQL {
 					throw new RuntimeException("Unknown distance operator");
 				}
 				out.write(Double.toString(((DistanceBufferOperator) filter).getDistance()));
-			} else if (filter instanceof BBOX) {
-				LOGGER.finest("Filtering for BBOX");
-				out.write("ST_INTERSECTS(");
-				out.write("ST_ENVELOPE(");
-				e1.accept(this, extraData);
-				out.write("), ST_ENVELOPE(");
-				e2.accept(this, extraData);
-				out.write("))");
 			} else {
 				
 				if (filter instanceof Contains) {

@@ -35,6 +35,8 @@ import org.locationtech.jts.io.ParseException;
 
 public class SnowflakeDialect extends SQLDialect {
 	
+	//public enum GeoTypes {POINT, MULTIPOINT, LINESTRING, MULTILINESTRING, POLYGON, MULTIPOLYGON, GEOMETRY, GEOMETRY_COLLECTION};
+	
 	protected Integer POINT = Integer.valueOf(2001);
 	protected Integer MULTIPOINT = Integer.valueOf(2002);
     protected Integer LINESTRING = Integer.valueOf(2003);
@@ -43,6 +45,7 @@ public class SnowflakeDialect extends SQLDialect {
     protected Integer MULTIPOLYGON = Integer.valueOf(2006);
     protected Integer GEOMETRY = Integer.valueOf(2007);
     protected Integer GEOMETRY_COLLECTION = Integer.valueOf(2008);
+    protected Integer GEOGRAPHY = Integer.valueOf(2009);
 	
 	private static final Logger LOGGER = Logging.getLogger(SnowflakeDialect.class);
 	private static final String CLASS_NAME = "SnowflakeDialect";
@@ -106,6 +109,11 @@ public class SnowflakeDialect extends SQLDialect {
         if (GEOMETRY.equals(type)) {
         	LOGGER.exiting(CLASS_NAME, "getGeometryType", "GEOMETRY");
         	return "GEOMETRY";
+        }
+        
+        if (GEOGRAPHY.equals(type)) {
+        	LOGGER.exiting(CLASS_NAME, "getGeometryType", "GEOGRAPHY");
+        	return "GEOGRAPHY";
         }
         
         LOGGER.exiting(CLASS_NAME, "getGeometryType", super.getGeometryTypeName(type));
@@ -188,9 +196,13 @@ public class SnowflakeDialect extends SQLDialect {
 
 		LOGGER.entering(CLASS_NAME, "encodeGeometryEnvelope", new Object[] {tableName, geometryColumn, sql});
 		
-		sql.append("ST_ASWKB(ST_ENVELOPE(ST_COLLECT(");
+		
+		
+		sql.append("ST_ASWKB(ST_ENVELOPE(");
 		encodeColumnName(null, geometryColumn, sql);
-		sql.append(")))");
+		sql.append("))");
+		
+		
 				
 		LOGGER.exiting(CLASS_NAME,  "encodeGeometryEnvelope", sql.toString());
 	}
@@ -263,6 +275,7 @@ public class SnowflakeDialect extends SQLDialect {
         mappings.put(MultiPolygon.class, MULTIPOLYGON);
         mappings.put(Geometry.class, GEOMETRY);
         mappings.put(GeometryCollection.class, GEOMETRY_COLLECTION);
+        mappings.put(Geometry.class, GEOGRAPHY);
         
         LOGGER.exiting(CLASS_NAME, "registerClassToSqlMappings", mappings);
         
@@ -283,6 +296,7 @@ public class SnowflakeDialect extends SQLDialect {
         mappings.put(MULTIPOLYGON, MultiPolygon.class);
         mappings.put(GEOMETRY, Geometry.class);
         mappings.put(GEOMETRY_COLLECTION, GeometryCollection.class);
+        mappings.put(GEOGRAPHY, Geometry.class);
         
         LOGGER.exiting(CLASS_NAME, "registerSqlTypeToClassMappings", mappings);
     }
@@ -302,6 +316,7 @@ public class SnowflakeDialect extends SQLDialect {
         mappings.put("MULTIPOLYGON", MultiPolygon.class);
         mappings.put("GEOMETRY", Geometry.class);
         mappings.put("GEOMETRYCOLLECTION", GeometryCollection.class);
+        mappings.put("GEOGRAPHY", Geometry.class);
         
         LOGGER.exiting(CLASS_NAME, "registerSqlTypeNameToClassMappings", mappings);
     }

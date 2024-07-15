@@ -1,11 +1,9 @@
 package org.geotools.data.snowflake;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.dbcp.BasicDataSource;
