@@ -1,7 +1,11 @@
 package org.geotools.data.snowflake;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -18,6 +22,13 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 	
 	 private static final Logger LOGGER = Logging.getLogger(SnowflakeDataStoreFactory.class);
 	 private static final String CLASS_NAME = "SnowflakeDataStoreFactory";
+	 
+	 public static Map<String, Object> cloudOptions;
+	 static {
+		 cloudOptions = new HashMap<>();
+		 
+		 cloudOptions.put(Param.OPTIONS, CloudOptions.getCloudOptions());
+	 }
 
 
 	/** parameter for database type */
@@ -26,8 +37,9 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 	public static final Param DATABASE = new Param("database", String.class, "Database", true);
 	public static final Param ACCOUNT = new Param("account", String.class, "Snowflake account", true);
 	public static final Param SCHEMA = new Param("schema", String.class, "Schema", false);
-	public static final Param CLOUD_PROVIDER = new Param("cloud provider", String.class, "Cloud Provider", true);
-	public static final Param CLOUD_REGION = new Param("cloud region", String.class, "Cloud Region", true);
+	public static final Param CLOUD_SELECTION = new Param("Cloud Selection", String.class, "Cloud provider and region selection", true, "AWS : us-west-2", cloudOptions);
+	
+	
 	//public static final Param JDBC_URL = new Param("connectionStr", String.class, "Connection JDBC URL", true);
 
 	@Override
@@ -77,18 +89,28 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 		parameters.put(PASSWD.key, PASSWD); // Use the default password parameter
 		parameters.put(DATABASE.key, DATABASE);
 		parameters.put(SCHEMA.key, SCHEMA);
-		parameters.put(CLOUD_PROVIDER.key, CLOUD_PROVIDER);
-		parameters.put(CLOUD_REGION.key, CLOUD_REGION);
+		parameters.put(CLOUD_SELECTION.key, CLOUD_SELECTION);
+		
+		
+//		List<String> options = CloudOptions.getCloudOptions();
+//		Map<String, Object> metadata = new HashMap<>();
+//		metadata.put(Param.OPTIONS, options);
+//		
+//		Param cloudSelection = new Param("Cloud Selection", String.class, "Cloud provider and region selection", true, "AWS : us-west-2", metadata);
+//		parameters.put(cloudSelection.key, cloudSelection);
+		
+		
+		
+		
 		//parameters.put(JDBC_URL.key, JDBC_URL);
 		
 		
 		LOGGER.finer("Setup parameters for Snowflake DataStore\n\tAccount: " + ACCOUNT.toString()
 				+ "\n\tUser: " + USER.toString()
-				+ "\n\tProvider: " + CLOUD_PROVIDER.toString()
-				+ "\n\tRegion: " + CLOUD_REGION.toString()
 				+ "\n\tPassword: " + PASSWD.toString()
 				+ "\n\tDatabase: " + DATABASE.toString() 
-				+ "\n\tSchema: " + SCHEMA.toString());
+				+ "\n\tSchema: " + SCHEMA.toString()
+				);
 		
 		LOGGER.exiting(CLASS_NAME, "setupParameters", parameters);
 	}
@@ -101,8 +123,10 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 		String account = (String) ACCOUNT.lookUp(params);
 		String database = (String) DATABASE.lookUp(params);
 		String schema = (String) SCHEMA.lookUp(params);
-		String cloudProvider = (String) CLOUD_PROVIDER.lookUp(params);
-		String cloudRegion = (String) CLOUD_REGION.lookUp(params);
+		String cloudSelection = (String) CLOUD_SELECTION.lookUp(params);
+		
+		String cloudProvider = cloudSelection.split(" ")[0].toLowerCase();
+		String cloudRegion = cloudSelection.split(" ")[2];
 
 		StringBuilder url = new StringBuilder();
 		url.append("jdbc:snowflake://").append(account).append(".").append(cloudRegion).append(".").append(cloudProvider).append(".snowflakecomputing.com");
@@ -179,8 +203,12 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 		String account = (String) ACCOUNT.lookUp(params);
 		String database = (String) DATABASE.lookUp(params);
 		String schema = (String) SCHEMA.lookUp(params);
-		String cloudProvider = (String) CLOUD_PROVIDER.lookUp(params);
-		String cloudRegion = (String) CLOUD_REGION.lookUp(params);
+		String cloudSelection = (String) CLOUD_SELECTION.lookUp(params);
+		
+		String cloudProvider = cloudSelection.split(" ")[0].toLowerCase();
+		String cloudRegion = cloudSelection.split(" ")[2];
+	
+
 
 		//String connectionJDBCUrl = (String) JDBC_URL.lookUp(params);
 
@@ -196,8 +224,8 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 			properties.put("schema", schema);
 		}
 		properties.put("tracing", "all");
-		properties.put("cloud_provider", cloudProvider);
-		properties.put("cloud_region", cloudRegion);
+		
+
 
 		String connectStr = "jdbc:snowflake://" + account + "." + cloudRegion + "." + cloudProvider + ".snowflakecomputing.com?db=" + database;
 		dataSource.setUrl(connectStr);
