@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet Vector Tiles with WMTS</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.vectorgrid/dist/Leaflet.VectorGrid.min.js"></script>
+    <style>
+        #map {
+            width: 100%;
+            height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // Initialize the map with a valid zoom level
+        var map = L.map('map').setView([44.484053, -71.16899], 10);
+
+        // Add the Positron base layer
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Function to add a vector tile layer
+        function addVectorTileLayer(layerName, workspace, vectorTileLayerStyles) {
+            var wmtsUrl = `http://localhost:8080/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=${workspace}:${layerName}&STYLE=&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILEMATRIX=EPSG:900913:{z}&TILEROW={y}&TILECOL={x}`;
+
+            var vectorTileLayer = L.vectorGrid.protobuf(wmtsUrl, {
+                vectorTileLayerStyles: vectorTileLayerStyles,
+                interactive: true,
+                getFeatureId: function(feature) {
+                    return feature.properties.id; // Adjust according to your feature properties
+                }
+            }).addTo(map);
+
+            // Add a popup on click
+            vectorTileLayer.on('click', function(e) {
+                var properties = e.layer.properties;
+                console.log("Feature properties:", properties); // Log properties for debugging
+
+                // Parse the nested JSON string in the PROPERTIES field
+                var parsedProperties = JSON.parse(properties.PROPERTIES);
+
+                // Construct popup content
+                var popupContent = `<p><strong>ID:</strong> ${parsedProperties.CommunityID || parsedProperties.id || 'N/A'}</p>`;
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(popupContent)
+                    .openOn(map);
+            });
+        }
+
+        // Add layers
+        addVectorTileLayer('COMMUNITIES', 'comsonics', {
+            'COMMUNITIES': {
+                fill: true,
+                weight: 1,
+                fillColor: '#0000FF',
+                color: '#0000FF',
+                fillOpacity: 0.2,
+                opacity: 0.4
+            }
+        });
+
+        addVectorTileLayer('COMMUNITIES_CENTROIDS', 'comsonics', {
+            'COMMUNITIES_CENTROIDS': {
+                fill: true,
+                weight: 1,
+                fillColor: '#FF0000',
+                color: '#FF0000',
+                fillOpacity: 0.2,
+                opacity: 0.4
+            }
+        });
+
+        addVectorTileLayer('DRIVEPATHS', 'comsonics', {
+            'DRIVEPATHS': {
+                weight: 2,
+                color: '#00FF00',
+                opacity: 0.6
+            }
+        });
+
+        addVectorTileLayer('PLANT_COVERAGE', 'comsonics', {
+            'PLANT_COVERAGE': {
+                fill: true,
+                weight: 1,
+                fillColor: '#00FFFF',
+                color: '#00FFFF',
+                fillOpacity: 0.2,
+                opacity: 0.4
+            }
+        });
+
+    </script>
+</body>
+</html>
