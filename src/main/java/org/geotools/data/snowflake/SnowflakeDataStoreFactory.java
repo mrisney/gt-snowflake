@@ -1,11 +1,8 @@
 package org.geotools.data.snowflake;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -23,161 +20,134 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 	 private static final Logger LOGGER = Logging.getLogger(SnowflakeDataStoreFactory.class);
 	 private static final String CLASS_NAME = "SnowflakeDataStoreFactory";
 	 
-	 public static Map<String, Object> cloudOptions;
-	 static {
-		 cloudOptions = new HashMap<>();
-		 
-		 cloudOptions.put(Param.OPTIONS, CloudOptions.getCloudOptions());
-	 }
+//	 public static Map<String, Object> cloudOptions;
+//	 static {
+//		 cloudOptions = new HashMap<>();
+//		 
+//		 cloudOptions.put(Param.OPTIONS, CloudOptions.getCloudOptions());
+//	 }
 
 
 	/** parameter for database type */
-	public static final Param DBTYPE = new Param("dbtype", String.class, "Type", true, "snowflake",
+	public static final Param DBTYPE = new Param("DB Type", String.class, "Type", true, "Snowflake",
 			Collections.singletonMap(Parameter.LEVEL, "program"));
-	public static final Param DATABASE = new Param("database", String.class, "Database", true);
-	public static final Param ACCOUNT = new Param("account", String.class, "Snowflake account", true);
-	public static final Param SCHEMA = new Param("schema", String.class, "Schema", false);
-	public static final Param CLOUD_SELECTION = new Param("Cloud Selection", String.class, "Cloud provider and region selection", true, "AWS : us-west-2", cloudOptions);
+	public static final Param DATABASE = new Param("Database", String.class, "Database", true);
+	public static final Param ACCOUNT = new Param("Account Identifier", String.class, "Snowflake account identifier", true);
+	public static final Param SCHEMA = new Param("Schema", String.class, "Schema", false);
+	public static final Param CLOUD_SELECTION = new Param("Cloud Selection", String.class, "Cloud provider and region selection", true, "AWS : us-west-2", CloudOptions.getCloudMetadata());
 	
+	public static final String SNOWFLAKE_DRIVER_CLASS_NAME = "net.snowflake.client.jdbc.SnowflakeDriver";
 	
-	//public static final Param JDBC_URL = new Param("connectionStr", String.class, "Connection JDBC URL", true);
-
+	// Returns the sample data from the DBTYPE param
 	@Override
 	protected String getDatabaseID() {
-		LOGGER.entering(CLASS_NAME, "getDatabaseID");
-		LOGGER.exiting(CLASS_NAME, "getDatabaseID", (String) DBTYPE.sample);
 		return (String) DBTYPE.sample;
 	}
 
+	// Returns Snowflake since this is a Snowflake Datastore
 	@Override
 	public String getDisplayName() {
-		LOGGER.entering(CLASS_NAME, "getDisplayName");
-		LOGGER.exiting(CLASS_NAME, "getDisplayName", "Snowflake");
 		return "Snowflake";
 	}
 
+	// Returns some description of the Snowflake database
 	@Override
 	public String getDescription() {
-		LOGGER.entering(CLASS_NAME, "getDescription");
-		LOGGER.exiting(CLASS_NAME, "getDescription", "Snowflake Database");
 		return "Snowflake Database";
 	}
 
+	// Returns the Driver Class Name for the Snowflake JDBC Driver
 	@Override
 	protected String getDriverClassName() {
-		LOGGER.entering(CLASS_NAME, "getDriverClassName");
-		LOGGER.exiting(CLASS_NAME, "getDriverClassName", "net.snowflake.client.jdbc.SnowflakeDriver");
-		return "net.snowflake.client.jdbc.SnowflakeDriver";
+		return SNOWFLAKE_DRIVER_CLASS_NAME;
 	}
 
+	// Returns an instance of the Dialect class to use with the Snowflake Datastore
 	@Override
 	protected SQLDialect createSQLDialect(JDBCDataStore dataStore) {
-		LOGGER.entering(CLASS_NAME, "createSQLDialect", dataStore);
-		LOGGER.exiting(CLASS_NAME, "createSQLDialect");
 		return new SnowflakeDialectBasic(dataStore);
 	}
 
+	// Create the map of parameters used to connect to Snowflake
 	@Override
 	protected void setupParameters(Map<String, Object> parameters) {
 		super.setupParameters(parameters);
 		
-		LOGGER.entering(CLASS_NAME, "setupParameters", parameters);
+		// Host and port aren't required for a Snowflake connection so we can remove them
 		parameters.remove(HOST.key);
 		parameters.remove(PORT.key);
+		
+		// Required params for connecting to Snowflake
 		parameters.put(ACCOUNT.key, ACCOUNT);
 		parameters.put(USER.key, USER);
-		parameters.put(PASSWD.key, PASSWD); // Use the default password parameter
-		parameters.put(DATABASE.key, DATABASE);
-		parameters.put(SCHEMA.key, SCHEMA);
+		parameters.put(PASSWD.key, PASSWD);
 		parameters.put(CLOUD_SELECTION.key, CLOUD_SELECTION);
 		
-		
-//		List<String> options = CloudOptions.getCloudOptions();
-//		Map<String, Object> metadata = new HashMap<>();
-//		metadata.put(Param.OPTIONS, options);
-//		
-//		Param cloudSelection = new Param("Cloud Selection", String.class, "Cloud provider and region selection", true, "AWS : us-west-2", metadata);
-//		parameters.put(cloudSelection.key, cloudSelection);
-		
-		
-		
-		
-		//parameters.put(JDBC_URL.key, JDBC_URL);
-		
-		
-		LOGGER.finer("Setup parameters for Snowflake DataStore\n\tAccount: " + ACCOUNT.toString()
-				+ "\n\tUser: " + USER.toString()
-				+ "\n\tPassword: " + PASSWD.toString()
-				+ "\n\tDatabase: " + DATABASE.toString() 
-				+ "\n\tSchema: " + SCHEMA.toString()
-				);
-		
-		LOGGER.exiting(CLASS_NAME, "setupParameters", parameters);
+		// Optional params for connecting to Snowflake
+		parameters.put(DATABASE.key, DATABASE);
+		parameters.put(SCHEMA.key, SCHEMA);
 	}
 
+	// Constructs the JDBCUrl based on parameters input by the user in the GeoServer UI
 	@Override
 	protected String getJDBCUrl(Map<String, ?> params) throws IOException {
 		
-		LOGGER.entering(CLASS_NAME, "getJDBCUrl", params);
-		
+		// Required params for connecting to Snowflake
 		String account = (String) ACCOUNT.lookUp(params);
-		String database = (String) DATABASE.lookUp(params);
-		String schema = (String) SCHEMA.lookUp(params);
 		String cloudSelection = (String) CLOUD_SELECTION.lookUp(params);
 		
+		// Optional params for connecting to Snowflake
+		String database = (String) DATABASE.lookUp(params);
+		String schema = (String) SCHEMA.lookUp(params);
+		
+		// Parse out the cloud provider and cloud region from the cloud selection dropdown
 		String cloudProvider = cloudSelection.split(" ")[0].toLowerCase();
 		String cloudRegion = cloudSelection.split(" ")[2];
 
 		StringBuilder url = new StringBuilder();
-		url.append("jdbc:snowflake://").append(account).append(".").append(cloudRegion).append(".").append(cloudProvider).append(".snowflakecomputing.com");
-		/*
-		 * if (database != null && !database.isEmpty()) {
-		 * url.append("/").append(database); }
-		 * 
-		 * // Append the schema as a query parameter if it's not null or empty if
-		 * (schema != null && !schema.isEmpty()) { if (database != null &&
-		 * !database.isEmpty()) { url.append("?schema=").append(schema); } else {
-		 * url.append("?db=").append(database).append("&schema=").append(schema); } }
-		 */
+		// Start constructing the URL based on the required fields 
+		url.append("jdbc:snowflake://").append(account).append(".").append(cloudRegion).append(".").append(cloudProvider).append(".snowflakecomputing.com/");
 		
-		LOGGER.exiting(CLASS_NAME, "getJDBCUrl", url.toString());
+		// Append the database name as a query parameter if one was provided
+		if (database != null && !database.isBlank()) {
+			url.append("?db=").append(database); 
+		}
+		
+		// Append the schema as a query parameter if one was provided
+		if (schema != null && !schema.isBlank()) { 	
+			url.append("&schema=").append(schema); 
+		}
+		 
 		return url.toString();
 	}
 
+	// Simple validation query ran once the connection is successful
 	@Override
 	protected String getValidationQuery() {
-		LOGGER.entering(CLASS_NAME, "getValidationQuery");
-		LOGGER.exiting(CLASS_NAME, "getValidationQuery", "SELECT 1");
 		return "SELECT 1";
 	}
 
+	
+	// Checks whether the connector can access the Snowflake JDBC Driver class
 	@Override
-	public boolean canProcess(Map params) {
-		LOGGER.entering(CLASS_NAME, "canProcess", params);
+	public boolean canProcess(Map<String, ?> params) {
+		
 		try {
-			Class.forName("net.snowflake.client.jdbc.SnowflakeDriver");
-			
-			LOGGER.finer("Success -- Found Class net.snowflake.client.jdbc.SnowflakeDriver");
-			LOGGER.exiting(CLASS_NAME, "canProcess", checkDBType(params) && super.canProcess(params));
-			
+			Class.forName(SNOWFLAKE_DRIVER_CLASS_NAME);
 			return checkDBType(params) && super.canProcess(params);
 		} catch (ClassNotFoundException e) {
-			
-			LOGGER.finer("Failure -- Snowflake JDBC driver not found");
-			LOGGER.exiting(CLASS_NAME, "canProcess", false);
 			return false;
 		}
 	}
 
+	// Creates the internal Datastore
 	@Override
 	protected JDBCDataStore createDataStoreInternal(JDBCDataStore dataStore, Map<String, ?> params) throws IOException {
-		//SnowflakeDialect dialect = (SnowflakeDialect) dataStore.getSQLDialect();
-		LOGGER.entering(CLASS_NAME, "createDataStoreInternal", new Object[] {dataStore, params});
 		logParameters(params);
-		LOGGER.exiting(CLASS_NAME, "createDataStoreInternal", dataStore);
 		return dataStore;
 	}
 
+	// Helper function for logging parameters input by the user in the GeoServer UI
 	private void logParameters(Map<String, ?> params) {
 		
 		LOGGER.finer("Parameters set by the user:");
@@ -193,49 +163,53 @@ public class SnowflakeDataStoreFactory extends JDBCDataStoreFactory {
 		}
 	}
 
+	// Creates a BasicDataSource using the parameters input by the user in the GeoServer UI
 	@Override
 	public BasicDataSource createDataSource(Map<String, ?> params) throws IOException {
 		
-		LOGGER.entering(CLASS_NAME, "createDataSource", params);
 		BasicDataSource dataSource = new BasicDataSource();
+		
+		// Required params for connecting to Snowflake
 		String user = (String) USER.lookUp(params);
 		String password = (String) PASSWD.lookUp(params);
 		String account = (String) ACCOUNT.lookUp(params);
-		String database = (String) DATABASE.lookUp(params);
-		String schema = (String) SCHEMA.lookUp(params);
 		String cloudSelection = (String) CLOUD_SELECTION.lookUp(params);
 		
+		// Optional params for connecting to Snowflake
+		String database = (String) DATABASE.lookUp(params);
+		String schema = (String) SCHEMA.lookUp(params);
+		
+		// Parse the cloud provider and cloud region from the Cloud Selection dropdown
 		String cloudProvider = cloudSelection.split(" ")[0].toLowerCase();
 		String cloudRegion = cloudSelection.split(" ")[2];
-	
 
-
-		//String connectionJDBCUrl = (String) JDBC_URL.lookUp(params);
-
+		// Create a mapping of properties
 		Properties properties = new Properties();
 		properties.put("user", user);
 		properties.put("password", password);
 		properties.put("account", account);
 		properties.put("database", database);
-		if (database != null) {
+		String connectStr = "jdbc:snowflake://" + account + "." + cloudRegion + "." + cloudProvider + ".snowflakecomputing.com/";
+		
+		// Append the database parameter if one was provided
+		if (database != null && !database.isBlank()) {
 			properties.put("db", database);
+			connectStr += "?db=" + database;
 		}
-		if (schema != null) {
+		
+		// Append the schema parameter if one was provided
+		if (schema != null && !schema.isBlank()) {
 			properties.put("schema", schema);
+			connectStr += "&schema=" + schema;
 		}
 		properties.put("tracing", "all");
-		
 
-
-		String connectStr = "jdbc:snowflake://" + account + "." + cloudRegion + "." + cloudProvider + ".snowflakecomputing.com?db=" + database;
+		// Finish configuring the datastore
 		dataSource.setUrl(connectStr);
 		dataSource.setUsername(user);
 		dataSource.setPassword(password);
 		dataSource.setDriverClassName(getDriverClassName());
 		dataSource.setConnectionProperties(properties.toString());
-
-		LOGGER.finer("Configured DataSource with Arrow disabled and custom properties");
-		LOGGER.exiting(CLASS_NAME, "createDataSource", dataSource);
 
 		return dataSource;
 	}

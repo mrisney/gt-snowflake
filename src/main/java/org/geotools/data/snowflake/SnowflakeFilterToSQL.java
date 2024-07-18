@@ -27,11 +27,13 @@ public class SnowflakeFilterToSQL extends FilterToSQL {
 
     private static final Logger LOGGER = Logging.getLogger(SnowflakeFilterToSQL.class);
 
+    // Constructor method
     public SnowflakeFilterToSQL(Writer out) {
         super(out);
       
     }
 
+    // Creates and returns a 'list' of all fitler capabilities the connector has implemented (may be missing certain filters)
     @Override
     protected FilterCapabilities createFilterCapabilities() {
       
@@ -49,6 +51,7 @@ public class SnowflakeFilterToSQL extends FilterToSQL {
         return capabilities;
     }
 
+    // Appends code to convert the provided Well-Known-Text expression to a Geometry object
     @Override
     protected void visitLiteralGeometry(Literal expression) throws IOException {
       
@@ -58,10 +61,11 @@ public class SnowflakeFilterToSQL extends FilterToSQL {
             g = g.getFactory().createLineString(((LinearRing) g).getCoordinateSequence());
         }
 
-        out.write("ST_GEOGFROMTEXT('" + g.toText() + "')");
+        out.write("ST_GEOMFROMTEXT('" + g.toText() + "')");
 
     }
 
+    // Override method for passing different parameters into visitBinarySpatialOperator()
     @Override
     protected Object visitBinarySpatialOperator(
             BinarySpatialOperator filter,
@@ -72,13 +76,16 @@ public class SnowflakeFilterToSQL extends FilterToSQL {
         return visitBinarySpatialOperator(filter, property, (Expression) geometry, swapped, extraData);
     }
 
+    // Override method for passing different parameters into visitBinarySpatialOperator()
     @Override
     protected Object visitBinarySpatialOperator(BinarySpatialOperator filter, Expression e1, Expression e2, Object extraData) {
         return visitBinarySpatialOperator(filter, e1, e2, false, extraData);
     }
 
+    // This method contains the implementations of the FilterCapabilities supported from createFilterCapabilities()
     protected Object visitBinarySpatialOperator(BinarySpatialOperator filter, Expression e1, Expression e2, boolean swapped, Object extraData) {
         try {
+        	// Bounding Box implementation if the provided expressions are not disjoint and are not DistanceBufferOperators
             if (!(filter instanceof Disjoint) && !(filter instanceof DistanceBufferOperator)) {
                 out.write("ST_INTERSECTS(");
                 e1.accept(this, extraData);
@@ -92,10 +99,11 @@ public class SnowflakeFilterToSQL extends FilterToSQL {
             }
 
             if (filter instanceof BBOX) {
-                // nothing to do. already encoded above
+                // BBOX is implmeneted above, so just return the output of the above code
                 return extraData;
             }
 
+            // Handle DistanceBufferOperator Filter in Snowflake
             if (filter instanceof DistanceBufferOperator) {
                 out.write("ST_DISTANCE(");
                 e1.accept(this, extraData);
@@ -103,6 +111,7 @@ public class SnowflakeFilterToSQL extends FilterToSQL {
                 e2.accept(this, extraData);
                 out.write(")");
 
+                // Handle DWithin or Beyond filter in Snowflake
                 if (filter instanceof DWithin) {
                     out.write("<");
                 } else if (filter instanceof Beyond) {
@@ -112,6 +121,7 @@ public class SnowflakeFilterToSQL extends FilterToSQL {
                 }
                 out.write(Double.toString(((DistanceBufferOperator) filter).getDistance()));
             } else {
+            	// Handle Contains/Crosses/Disjoint/Intersects/Within filters in Snowflake
                 if (filter instanceof Contains) {
                      out.write("ST_CONTAINS(");
                 } else if (filter instanceof Crosses) {
@@ -144,6 +154,7 @@ public class SnowflakeFilterToSQL extends FilterToSQL {
         return extraData;
     }
 
+    // Override method for handling the Intersects filter
     @Override
     public Object visit(Intersects filter, Object extraData) {
         try {
@@ -159,6 +170,7 @@ public class SnowflakeFilterToSQL extends FilterToSQL {
         return extraData;
     }
 
+    // Override method for handling the BBOX filter
     @Override
     public Object visit(BBOX filter, Object extraData) {
         try {
@@ -176,6 +188,7 @@ public class SnowflakeFilterToSQL extends FilterToSQL {
         return extraData;
     }
 
+    // Implementation to handle BBOX filter for Geography columns in Snowflake
     private String bboxToWkt(BBOX filter) {
         try {
             org.geotools.geometry.jts.ReferencedEnvelope envelope = new org.geotools.geometry.jts.ReferencedEnvelope(filter.getBounds());

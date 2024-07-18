@@ -5,19 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.geotools.api.data.DataAccessFactory.Param;
+
 public class CloudOptions {
 	
 	private static final Map<String, String> AWS_REGIONS = new HashMap<>();
     private static final Map<String, String> GCP_REGIONS = new HashMap<>();
     private static final Map<String, String> AZURE_REGIONS = new HashMap<>();
-    private static final Map<String, String> CLOUD_PROVIDERS = new HashMap<>();
-
-    // Cloud Providers
-    static {
-        CLOUD_PROVIDERS.put("Amazon Web Services (AWS)", "AWS");
-        CLOUD_PROVIDERS.put("Google Cloud Platform (GCP)", "GCP");
-        CLOUD_PROVIDERS.put("Microsoft Azure", "Azure");
-    }
 
     // AWS Regions
     static {
@@ -87,7 +81,8 @@ public class CloudOptions {
         AZURE_REGIONS.put("Australia East (New South Wales)", "australia-east");
     }
     
-    public static List<String> getCloudOptions() {
+    // Put all of the cloud options into a List
+    private static List<String> getCloudOptions() {
     	List<String> cloudOptions = new ArrayList<String>();
     	
     	for (Map.Entry<String, ?> entry : AWS_REGIONS.entrySet()) {
@@ -103,6 +98,15 @@ public class CloudOptions {
     	}
     	
     	return cloudOptions;
+    }
+    
+    // Returns the Map<String, Object> representation of the cloudOptions List, which is passed into the CLOUD_SELECTION parameter to allow the user to select from a dropdown menu
+    public static Map<String, Object> getCloudMetadata() {
+    	Map<String, Object> cloudMetadata = new HashMap<>();
+		 
+		cloudMetadata.put(Param.OPTIONS, getCloudOptions());
+		
+		return cloudMetadata;
     }
 
 }

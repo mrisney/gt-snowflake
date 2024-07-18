@@ -35,102 +35,67 @@ import org.locationtech.jts.io.ParseException;
 
 public class SnowflakeDialect extends SQLDialect {
 	
-	//public enum GeoTypes {POINT, MULTIPOINT, LINESTRING, MULTILINESTRING, POLYGON, MULTIPOLYGON, GEOMETRY, GEOMETRY_COLLECTION};
+	// Enum for Geographic types to map to SQL
+	public static enum GeoTypes {POINT, MULTIPOINT, LINESTRING, MULTILINESTRING, POLYGON, MULTIPOLYGON, GEOMETRY, GEOMETRY_COLLECTION, GEOGRAPHY};
 	
-	protected Integer POINT = Integer.valueOf(2001);
-	protected Integer MULTIPOINT = Integer.valueOf(2002);
-    protected Integer LINESTRING = Integer.valueOf(2003);
-    protected Integer MULTILINESTRING = Integer.valueOf(2004);
-    protected Integer POLYGON = Integer.valueOf(2005);
-    protected Integer MULTIPOLYGON = Integer.valueOf(2006);
-    protected Integer GEOMETRY = Integer.valueOf(2007);
-    protected Integer GEOMETRY_COLLECTION = Integer.valueOf(2008);
-    protected Integer GEOGRAPHY = Integer.valueOf(2009);
-	
-	private static final Logger LOGGER = Logging.getLogger(SnowflakeDialect.class);
-	private static final String CLASS_NAME = "SnowflakeDialect";
+//	  protected Integer POINT = Integer.valueOf(2001);
+//	  protected Integer MULTIPOINT = Integer.valueOf(2002);
+//    protected Integer LINESTRING = Integer.valueOf(2003);
+//    protected Integer MULTILINESTRING = Integer.valueOf(2004);
+//    protected Integer POLYGON = Integer.valueOf(2005);
+//    protected Integer MULTIPOLYGON = Integer.valueOf(2006);
+//    protected Integer GEOMETRY = Integer.valueOf(2007);
+//    protected Integer GEOMETRY_COLLECTION = Integer.valueOf(2008);
+//    protected Integer GEOGRAPHY = Integer.valueOf(2009);
 
+	// Constructor method
 	public SnowflakeDialect(JDBCDataStore dataStore) {
 		super(dataStore);
-		
-		LOGGER.entering(CLASS_NAME, "SnowflakeDialect", dataStore);
-		LOGGER.exiting(CLASS_NAME, "SnowflakeDialect");
 	}
 	
 
-	// Added by Austin 7/9/2024
+	// Returns a string representation of Snowflake's name escape character
 	@Override
 	public String getNameEscape() {
-		LOGGER.entering(CLASS_NAME, "getNameEscape");
-		LOGGER.exiting(CLASS_NAME, "getNameEscape", "\"");
 		return "\"";
 	}
 	
-	// Added by Austin 7/9/2024
+	// Returns the string representation of the mapped Geographic Type passed to the function
 	@Override
     public String getGeometryTypeName(Integer type) {
-		LOGGER.entering(CLASS_NAME, "getGeometryType", type);
 		
-        if (POINT.equals(type)) {
-        	LOGGER.exiting(CLASS_NAME, "getGeometryType", "POINT");
-            return "POINT";
-        }
-
-        if (MULTIPOINT.equals(type)) {
-        	LOGGER.exiting(CLASS_NAME, "getGeometryType", "MULTIPOINT");
-            return "MULTIPOINT";
-        }
-
-        if (LINESTRING.equals(type)) {
-        	LOGGER.exiting(CLASS_NAME, "getGeometryType", "LINESTRING");
-            return "LINESTRING";
-        }
-
-        if (MULTILINESTRING.equals(type)) {
-        	LOGGER.exiting(CLASS_NAME, "getGeometryType", "MULTILINESTRING");
-            return "MULTILINESTRING";
-        }
-
-        if (POLYGON.equals(type)) {
-        	LOGGER.exiting(CLASS_NAME, "getGeometryType", "POLYGON");
-            return "POLYGON";
-        }
-
-        if (MULTIPOLYGON.equals(type)) {
-        	LOGGER.exiting(CLASS_NAME, "getGeometryType", "MULTIPOLYGON");
-            return "MULTIPOLYGON";
-        }
-
-        if (GEOMETRY_COLLECTION.equals(type)) {
-        	LOGGER.exiting(CLASS_NAME, "getGeometryType", "GEOMETRYCOLLECTION");
-            return "GEOMETRYCOLLECTION";
-        }
-        
-        if (GEOMETRY.equals(type)) {
-        	LOGGER.exiting(CLASS_NAME, "getGeometryType", "GEOMETRY");
-        	return "GEOMETRY";
-        }
-        
-        if (GEOGRAPHY.equals(type)) {
-        	LOGGER.exiting(CLASS_NAME, "getGeometryType", "GEOGRAPHY");
-        	return "GEOGRAPHY";
-        }
-        
-        LOGGER.exiting(CLASS_NAME, "getGeometryType", super.getGeometryTypeName(type));
-
-        return super.getGeometryTypeName(type);
+		GeoTypes selectedType = GeoTypes.values()[type];
+		
+		switch(selectedType) {
+			case POINT:
+				return "POINT";
+			case MULTIPOINT:
+				return "MULTIPOINT";
+			case LINESTRING:
+				return "LINESTRING";
+			case MULTILINESTRING:
+				return "MULTILINESTRING";
+			case POLYGON:
+				return "POLYGON";
+			case MULTIPOLYGON:
+				return "MULTIPOLYGON";
+			case GEOMETRY_COLLECTION:
+				return "GEOMETRY_COLLECTION";
+			case GEOMETRY:
+				return "GEOMETRY";
+			case GEOGRAPHY:
+				return "GEOGRAPHY";
+			default:
+				return super.getGeometryTypeName(type);
+		}
     }
 	
-	// Changed by Austin 7/9/2024
+	// Returns the SRID of the provided geometry column
 	@Override
 	public Integer getGeometrySRID(String schemaName, String tableName, String columnName, Connection cx)
 			throws SQLException {
 		
-		LOGGER.entering(CLASS_NAME, "getGeometrySRID", new Object[] {schemaName, tableName, columnName, cx});
-		
-		
-		
-		// Execute SELECT TOP 1 ST_SRID(<columnName>) FROM <tableName>; 
+		// Execute SELECT TOP 1 ST_SRID(<columnName>) FROM <tableName> WHERE <columnName> IS NOT NULL; 
 		StringBuffer sql = new StringBuffer();
 		
 		sql.append("SELECT TOP 1 ST_SRID(");
@@ -148,7 +113,7 @@ public class SnowflakeDialect extends SQLDialect {
 		sql.append(" IS NOT NULL");
 		
 		
-		LOGGER.finer("getGeometrySRID() -- " + sql.toString());
+		System.out.println("getGeometrySRID() -- " + sql.toString());
 		
 		Statement st = cx.createStatement();
 		try {
@@ -157,18 +122,10 @@ public class SnowflakeDialect extends SQLDialect {
 			try {
 				if (rs.next()) {
 					// Return the SRID
-					
-					LOGGER.finer("getGeometrySRID() -- Successfully retrieved SRID");
-					
-					
-					LOGGER.exiting(CLASS_NAME, "getGeometrySRID", Integer.valueOf(rs.getInt(1)));
 					return Integer.valueOf(rs.getInt(1));
 				} else {
 					// Couldn't find SRID
-					
-					LOGGER.finer("getGeometrySRID() -- Failed to retrieve SRID");
-					
-					LOGGER.exiting(CLASS_NAME, "getGeometrySRID", null);
+					System.out.println("Couldn't find SRID");
 					return null;
 				}
 			} finally {
@@ -179,134 +136,93 @@ public class SnowflakeDialect extends SQLDialect {
 		}
 	}
 
-	// Added by Austin 7/9/2024
+	// Encodes the provided geometry column as Well-Known-Binary and appends it to the SQL Buffer
 	@Override
 	public void encodeGeometryColumn(GeometryDescriptor gatt, String prefix, int srid, Hints hints, StringBuffer sql) {
 		
-		LOGGER.entering(CLASS_NAME, "encodeGeometryColumn", new Object [] { gatt, prefix, srid, hints, sql});
 		sql.append("ST_ASWKB(");
 		encodeColumnName(prefix, gatt.getLocalName(), sql);
 		sql.append(")");
-		LOGGER.exiting(CLASS_NAME, "encodeGeometryColumn", sql.toString());
 	}
 	
-	// Changed by Austin 7/9/2024
+	// Appends code for getting the bounding box of the provided geometry column to the SQL Buffer
 	@Override
 	public void encodeGeometryEnvelope(String tableName, String geometryColumn, StringBuffer sql) {
 
-		LOGGER.entering(CLASS_NAME, "encodeGeometryEnvelope", new Object[] {tableName, geometryColumn, sql});
-		
-		
-		
 		sql.append("ST_ASWKB(ST_ENVELOPE(");
 		encodeColumnName(null, geometryColumn, sql);
 		sql.append("))");
-		
-		
-				
-		LOGGER.exiting(CLASS_NAME,  "encodeGeometryEnvelope", sql.toString());
 	}
 	
-	// Changed by Austin 7/9/2024
+	// Converts the provided column into Well-Known-Binary and returns the bounding Envelope using the internal implementation from GeoServer
 	@Override
 	public Envelope decodeGeometryEnvelope(ResultSet rs, int column, Connection cx) throws SQLException, IOException {
-
-		LOGGER.entering(CLASS_NAME, "decodeGeometryEnvelope", new Object[] {rs, column, cx});
 		
 		byte[] wkb = rs.getBytes(column);
 		
 		try {
 			Geometry geom = new WKBReader().read(wkb);
 			
-			LOGGER.exiting(CLASS_NAME, "decodeGeometryEnvelope", geom.getEnvelopeInternal());
-			
 			return geom.getEnvelopeInternal();
 		} catch (ParseException e) {
-			String msg = "Error decoding wkb for envelope";
-			
-			LOGGER.exiting(CLASS_NAME, "decodeGeometryEnvelope", "IOException: " + msg);
-			
-			throw (IOException) new IOException(msg).initCause(e);
+			throw (IOException) new IOException("Error decoding wkb for envelope").initCause(e);
 		}
 	}
 	
-	// Changed by Austin 7/9/2024
+	// Returns the Well-Known-Binary representation of the provided geometry column
 	@Override
 	public Geometry decodeGeometryValue(GeometryDescriptor descriptor, ResultSet rs, String column,
 			GeometryFactory factory, Connection cx, Hints hints) throws IOException, SQLException {
 		
-		LOGGER.entering(CLASS_NAME, "decodeGeometryValue", new Object[] {descriptor, rs, column, factory, cx, hints});
-		
 		byte[] bytes = rs.getBytes(column);
+		
 		if (bytes == null) {
-			
-			LOGGER.exiting(CLASS_NAME, "decodeGeometryValue", null);
-			
 			return null;
 		}
 
 		try {
-			
-			LOGGER.exiting(CLASS_NAME, "decodeGeometryValue", new WKBReader(factory).read(bytes));
-			
 			return new WKBReader(factory).read(bytes);
-			
 		} catch (ParseException e) {
-			
-			String msg = "Error decoding wkb";
-			LOGGER.exiting(CLASS_NAME, "decodeGeometryValue", "IOException: " + msg);
-			
-			throw (IOException) new IOException(msg).initCause(e);
+			throw (IOException) new IOException("Error decoding wkb").initCause(e);
 		}
 	}
 	
-	// Added by Austin 7/9/2024
+	// Creates a mapping between SQL's Geometric classes and the GeoTypes Enum declared in this class
 	@Override
     public void registerClassToSqlMappings(Map<Class<?>, Integer> mappings) {
         super.registerClassToSqlMappings(mappings);
-        
-        LOGGER.entering(CLASS_NAME, "registerClassToSqlMappings", mappings);
 
-        mappings.put(Point.class, POINT);
-        mappings.put(LineString.class, LINESTRING);
-        mappings.put(Polygon.class, POLYGON);
-        mappings.put(MultiPoint.class, MULTIPOINT);
-        mappings.put(MultiLineString.class, MULTILINESTRING);
-        mappings.put(MultiPolygon.class, MULTIPOLYGON);
-        mappings.put(Geometry.class, GEOMETRY);
-        mappings.put(GeometryCollection.class, GEOMETRY_COLLECTION);
-        mappings.put(Geometry.class, GEOGRAPHY);
-        
-        LOGGER.exiting(CLASS_NAME, "registerClassToSqlMappings", mappings);
-        
+        mappings.put(Point.class, GeoTypes.POINT.ordinal());
+        mappings.put(MultiPoint.class, GeoTypes.MULTIPOINT.ordinal());
+        mappings.put(LineString.class, GeoTypes.LINESTRING.ordinal());
+        mappings.put(MultiLineString.class, GeoTypes.MULTILINESTRING.ordinal());
+        mappings.put(Polygon.class, GeoTypes.POLYGON.ordinal());
+        mappings.put(MultiPolygon.class, GeoTypes.MULTIPOLYGON.ordinal());
+        mappings.put(Geometry.class, GeoTypes.GEOMETRY.ordinal());
+        mappings.put(GeometryCollection.class, GeoTypes.GEOMETRY_COLLECTION.ordinal());
+        mappings.put(Geometry.class, GeoTypes.GEOGRAPHY.ordinal());
     }
 
-	// Added by Austin 7/9/2024
+	// Creates a mapping between the GeoTypes Enum declared in this class and SQL's Geometric classes
     @Override
     public void registerSqlTypeToClassMappings(Map<Integer, Class<?>> mappings) {
         super.registerSqlTypeToClassMappings(mappings);
-        
-        LOGGER.entering(CLASS_NAME, "registerSqlTypeToClassMappings", mappings);
 
-        mappings.put(POINT, Point.class);
-        mappings.put(MULTIPOINT, MultiPoint.class);
-        mappings.put(LINESTRING, LineString.class);
-        mappings.put(MULTILINESTRING, MultiLineString.class);
-        mappings.put(POLYGON, Polygon.class);
-        mappings.put(MULTIPOLYGON, MultiPolygon.class);
-        mappings.put(GEOMETRY, Geometry.class);
-        mappings.put(GEOMETRY_COLLECTION, GeometryCollection.class);
-        mappings.put(GEOGRAPHY, Geometry.class);
-        
-        LOGGER.exiting(CLASS_NAME, "registerSqlTypeToClassMappings", mappings);
+        mappings.put(GeoTypes.POINT.ordinal(), Point.class);
+        mappings.put(GeoTypes.MULTIPOINT.ordinal(), MultiPoint.class);
+        mappings.put(GeoTypes.LINESTRING.ordinal(), LineString.class);
+        mappings.put(GeoTypes.MULTILINESTRING.ordinal(), MultiLineString.class);
+        mappings.put(GeoTypes.POLYGON.ordinal(), Polygon.class);
+        mappings.put(GeoTypes.MULTIPOLYGON.ordinal(), MultiPolygon.class);
+        mappings.put(GeoTypes.GEOMETRY.ordinal(), Geometry.class);
+        mappings.put(GeoTypes.GEOMETRY_COLLECTION.ordinal(), GeometryCollection.class);
+        mappings.put(GeoTypes.GEOGRAPHY.ordinal(), Geometry.class);
     }
 
-    // Added by Austin 7/9/2024
+    // Creates a mapping of the named string from the GeoTypes Enum declared in this class and SQL's Geometric classes
     @Override
     public void registerSqlTypeNameToClassMappings(Map<String, Class<?>> mappings) {
         super.registerSqlTypeNameToClassMappings(mappings);
-        
-        LOGGER.entering(CLASS_NAME, "registerSqlTypeNameToClassMappings", mappings);
 
         mappings.put("POINT", Point.class);
         mappings.put("MULTIPOINT", MultiPoint.class);
@@ -317,32 +233,20 @@ public class SnowflakeDialect extends SQLDialect {
         mappings.put("GEOMETRY", Geometry.class);
         mappings.put("GEOMETRYCOLLECTION", GeometryCollection.class);
         mappings.put("GEOGRAPHY", Geometry.class);
-        
-        LOGGER.exiting(CLASS_NAME, "registerSqlTypeNameToClassMappings", mappings);
     }
     
-    // Added by Austin 7/9/2024
+    // Creates a mapping to override SQL's types with Snowflake's types
     @Override
     public void registerSqlTypeToSqlTypeNameOverrides(Map<Integer, String> overrides) {
     	
-    	LOGGER.entering(CLASS_NAME, "registerSqlTypeToSqlTypeNameOverrides", overrides);
-    	
         overrides.put(Types.BOOLEAN, "BOOLEAN");
         overrides.put(Types.CLOB, "STRING");
-        
-        LOGGER.exiting(CLASS_NAME, "registerSqlTypeToSqlTypeNameOverrides", overrides);
     }
 	
+    // This project currently only supports 2-D Geometric values
 	@Override
 	public int getGeometryDimension(String schemaName, String tableName, String columnName, Connection cx)
 			throws SQLException {
-
-		LOGGER.entering(CLASS_NAME, "getGeometryDimension", new Object[] {schemaName, tableName, columnName, cx});
-		
-		// Implementation of getting geometry dimension
-		
-		LOGGER.exiting(CLASS_NAME, "getGeometryDimension", "Hard-Coded 2");
-		
 		return 2;
 	}
 }
